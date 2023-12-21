@@ -6,53 +6,56 @@
     <title>Recherche de Sous-ensemble</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script>
-        function findSubset(numbers, target, partial = []) {
-            let sum = partial.reduce((a, b) => a + b, 0);
+		function findSubset(numbers, target, partial = [], solutions = []) {
+			let sum = partial.reduce((a, b) => a + b, 0);
 
-            if (sum === target) {
-                return partial;
-            }
+			if (sum === target) {
+				let sortedPartial = partial.slice().sort((a, b) => a - b);
+				if (!solutions.some(solution => solution.length === sortedPartial.length && solution.every((value, index) => value === sortedPartial[index]))) {
+					solutions.push(sortedPartial);
+				}
+			}
 
-            if (sum > target) {
-                return false;
-            }
+			if (sum >= target) {
+				return;
+			}
 
-            for (let i = 0; i < numbers.length; i++) {
-                let remaining = numbers.slice();
-                let n = remaining.splice(i, 1)[0];
-                let partialRec = partial.concat([n]);
-                let result = findSubset(remaining, target, partialRec);
-                if (result) {
-                    return result;
-                }
-            }
+			for (let i = 0; i < numbers.length; i++) {
+				let remaining = numbers.slice();
+				let n = remaining.splice(i, 1)[0];
+				findSubset(remaining, target, partial.concat([n]), solutions);
+			}
 
-            return false;
-        }
+			return solutions;
+		}
 
-        function onSubmit() {
-            let numbersString = document.getElementById('numbers').value;
-            // Remplacer les virgules par des points
-            numbersString = numbersString.replace(/,/g, '.');
-            let target = parseFloat(document.getElementById('target').value);
-            let numbers = numbersString.split('\n').map(Number);
+		function onSubmit() {
+			let numbersString = document.getElementById('numbers').value;
+			numbersString = numbersString.replace(/,/g, '.');
+			let target = parseFloat(document.getElementById('target').value);
+			let numbers = numbersString.split('\n').map(Number);
 
-            let result = findSubset(numbers, target);
-            let resultElement = document.getElementById('result');
-            resultElement.innerHTML = ''; // Clear previous results
+			let solutions = findSubset(numbers, target);
+			let resultElement = document.getElementById('result');
+			resultElement.innerHTML = '';
 
-            if (result) {
-                let resultList = document.createElement('ul');
-                result.forEach(function(number) {
-                    let listItem = document.createElement('li');
-                    listItem.textContent = number;
-                    resultList.appendChild(listItem);
-                });
-                resultElement.appendChild(resultList);
-            } else {
-                resultElement.textContent = "Aucun sous-ensemble trouvé";
-            }
-        }
+			if (solutions.length > 0) {
+				solutions.forEach(solution => {
+					let resultTitle = document.createElement('p');
+					resultTitle.textContent = "Sous-ensemble trouvé :";
+					resultElement.appendChild(resultTitle);
+					let resultList = document.createElement('ul');
+					solution.forEach(function(number) {
+						let listItem = document.createElement('li');
+						listItem.textContent = number;
+						resultList.appendChild(listItem);
+					});
+					resultElement.appendChild(resultList);
+				});
+			} else {
+				resultElement.textContent = "Aucun sous-ensemble trouvé";
+			}
+		}
     </script>
 </head>
 <body>
